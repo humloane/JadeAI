@@ -9,7 +9,7 @@ import type {
   CustomContent,
   GitHubContent,
 } from '@/types/resume';
-import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section } from '../utils';
+import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section, dateRange } from '../utils';
 
 const RED = '#dc2626';
 const TEXT = '#18181b';
@@ -21,7 +21,7 @@ function buildSwissSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'work_experience') {
     return `<div class="space-y-4">${((c as WorkExperienceContent).items || []).map((it: any) => `<div class="grid grid-cols-[140px_1fr] gap-4">
-      <div class="text-xs" style="color:#71717a"><span>${esc(it.startDate)} &ndash; ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span></div>
+      <div class="text-xs" style="color:#71717a"><span>${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span></div>
       <div>
         <h3 class="text-sm font-bold" style="color:${TEXT}">${esc(it.position)}</h3>
         ${it.company ? `<p class="text-sm" style="color:${RED}">${esc(it.company)}</p>` : ''}
@@ -34,7 +34,7 @@ function buildSwissSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'education') {
     return `<div class="space-y-3">${((c as EducationContent).items || []).map((it: any) => `<div class="grid grid-cols-[140px_1fr] gap-4">
-      <span class="text-xs" style="color:#71717a">${esc(it.startDate)} &ndash; ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span>
+      <span class="text-xs" style="color:#71717a">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>
       <div>
         <h3 class="text-sm font-bold" style="color:${TEXT}">${esc(degreeField(it.degree, it.field))}</h3>
         ${it.institution ? `<p class="text-sm" style="color:${RED}">${esc(it.institution)}</p>` : ''}

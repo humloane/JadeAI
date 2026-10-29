@@ -196,3 +196,21 @@ export function buildExportThemeCSS(theme: typeof DEFAULT_THEME, template: strin
     }` : ''}
   `;
 }
+
+/**
+ * Render a date range without artefacts when dates are unknown.
+ * Empty ranges return "" so callers render nothing.
+ */
+export function dateRange(
+  start?: string | null,
+  end?: string | null,
+  current?: boolean,
+  lang: string = 'zh'
+): string {
+  const from = (start || '').trim();
+  const to = (end || '').trim();
+  const present = lang === 'zh' ? '至今' : 'Present';
+  if (from && to) return `${from} - ${to}`;
+  if (from && current) return `${from} - ${present}`;
+  return from || to;
+}

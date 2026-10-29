@@ -41,7 +41,7 @@ export default function PreviewPage({ params }: { params: Promise<{ id: string }
           setResume({
             ...data,
             themeConfig: (parseThemeConfig(data.themeConfig) ?? {}) as Resume['themeConfig'],
-            sections: normalizeSections(data.sections || []),
+            sections: normalizeSections(data.sections || [], data.language),
           });
         }
       })

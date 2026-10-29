@@ -9,7 +9,7 @@ import type {
   CustomContent,
   GitHubContent,
 } from '@/types/resume';
-import { esc, md, degreeField, getPersonalInfo, visibleSections, buildQrCodesHtml, type ResumeWithSections, type Section } from '../utils';
+import { esc, md, degreeField, getPersonalInfo, visibleSections, buildQrCodesHtml, type ResumeWithSections, type Section, dateRange } from '../utils';
 
 const PRIMARY = '#78350f';
 const ACCENT = '#92400e';
@@ -25,7 +25,7 @@ function buildRetroSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'work_experience') {
     return `<div class="space-y-4">${((c as WorkExperienceContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.position)}</h3><span class="shrink-0 text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(it.startDate)} - ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span></div>
+      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.position)}</h3><span class="shrink-0 text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span></div>
       ${it.company ? `<p class="text-sm italic" style="color:${ACCENT}">${esc(it.company)}</p>` : ''}
       ${it.description ? `<div class="mt-1 text-sm" style="color:${TEXT}">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<p class="mt-1 text-xs italic" style="color:${ACCENT}">${lang === 'zh' ? '技术栈' : 'Technologies'}: ${esc(it.technologies.join(', '))}</p>` : ''}
@@ -35,7 +35,7 @@ function buildRetroSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'education') {
     return `<div class="space-y-3">${((c as EducationContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.institution)}</h3><span class="text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(it.startDate)} - ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span></div>
+      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.institution)}</h3><span class="text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span></div>
       <p class="text-sm" style="color:${TEXT}">${esc(degreeField(it.degree, it.field))}</p>
       ${it.gpa ? `<p class="text-xs" style="color:${ACCENT}">GPA: ${esc(it.gpa)}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 space-y-0.5">${it.highlights.filter(Boolean).map((h: string) => `<li class="flex items-start gap-2 text-sm" style="color:${TEXT}"><span class="mt-1 shrink-0 text-xs" style="color:${PRIMARY}">&bull;</span>${md(h)}</li>`).join('')}</ul>` : ''}
@@ -50,7 +50,7 @@ function buildRetroSectionContent(section: Section, lang: string): string {
 
   if (section.type === 'projects') {
     return `<div class="space-y-3">${((c as ProjectsContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.name)}</h3>${it.startDate ? `<span class="text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(it.startDate)} - ${it.endDate ? esc(it.endDate) : (lang === 'zh' ? '至今' : 'Present')}</span>` : ''}</div>
+      <div class="flex items-baseline justify-between"><h3 class="text-sm font-bold" style="color:${PRIMARY}">${esc(it.name)}</h3>${it.startDate ? `<span class="text-xs" style="color:${ACCENT};font-family:'Courier New',monospace">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>` : ''}</div>
       ${it.description ? `<div class="mt-0.5 text-sm" style="color:${TEXT}">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<p class="mt-1 text-xs italic" style="color:${ACCENT}">${lang === 'zh' ? '技术栈' : 'Technologies'}: ${esc(it.technologies.join(', '))}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 space-y-0.5">${it.highlights.filter(Boolean).map((h: string) => `<li class="flex items-start gap-2 text-sm" style="color:${TEXT}"><span class="mt-1 shrink-0 text-xs" style="color:${PRIMARY}">&bull;</span>${md(h)}</li>`).join('')}</ul>` : ''}

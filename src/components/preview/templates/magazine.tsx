@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#1a1a1a';
@@ -104,7 +104,7 @@ function MagazineSectionContent({ section, resume }: { section: any; resume: Res
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.position}</h3>
               <span className="shrink-0 text-xs font-medium" style={{ color: ACCENT }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.company && <p className="text-sm font-medium italic" style={{ color: SECONDARY }}>{item.company}{item.location ? `, ${item.location}` : ''}</p>}
@@ -138,7 +138,7 @@ function MagazineSectionContent({ section, resume }: { section: any; resume: Res
           <div key={item.id} className="border-l-2 pl-4" style={{ borderColor: ACCENT }}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.institution}</h3>
-              <span className="text-xs" style={{ color: SECONDARY }}>{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs" style={{ color: SECONDARY }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             <p className="text-sm" style={{ color: SECONDARY }}>{degreeField(item.degree, item.field)}{item.location ? ` — ${item.location}` : ''}</p>
             {item.gpa && <p className="text-xs" style={{ color: SECONDARY }}>GPA: {item.gpa}</p>}
@@ -182,7 +182,7 @@ function MagazineSectionContent({ section, resume }: { section: any; resume: Res
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs" style={{ color: SECONDARY }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

@@ -2,7 +2,7 @@
 
 import type { Resume, PersonalInfoContent, SummaryContent, WorkExperienceContent, EducationContent, SkillsContent, ProjectsContent, CertificationsContent, LanguagesContent, CustomContent, GitHubContent } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const GRAY_700 = '#374151';
@@ -87,7 +87,7 @@ function ConsultantSectionContent({ section, resume }: { section: any; resume: R
                 {item.company && <span className="text-sm text-gray-500"> | {item.company}</span>}
                 {item.location && <span className="text-sm text-gray-400">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             {item.description && <p className="mt-1 text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
@@ -120,7 +120,7 @@ function ConsultantSectionContent({ section, resume }: { section: any; resume: R
                 {item.institution && <span className="text-sm text-gray-500"> - {item.institution}</span>}
                 {item.location && <span className="text-sm text-gray-400">, {item.location}</span>}
               </div>
-              <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             {item.gpa && <p className="text-sm text-gray-500">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -160,7 +160,7 @@ function ConsultantSectionContent({ section, resume }: { section: any; resume: R
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold" style={{ color: GRAY_700 }}>{item.name}</span>
               {item.startDate && (
-                <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+                <span className="shrink-0 text-xs font-medium" style={{ color: BLUE_600 }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
               )}
             </div>
             {item.description && <p className="mt-1 text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}

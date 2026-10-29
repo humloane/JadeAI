@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#4c1d95';
@@ -104,7 +104,7 @@ function WatercolorSectionContent({ section, lang }: { section: any; lang?: stri
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.position}</h3>
               <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white" style={{ background: `linear-gradient(135deg, ${ACCENT}, ${PRIMARY})` }}>
-                {item.startDate} - {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, lang)}
               </span>
             </div>
             {item.company && <p className="text-sm font-medium" style={{ color: ACCENT }}>{item.company}</p>}
@@ -142,7 +142,7 @@ function WatercolorSectionContent({ section, lang }: { section: any; lang?: stri
           <div key={item.id} className="rounded-xl p-4" style={{ backgroundColor: WASH }}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.institution}</h3>
-              <span className="text-xs" style={{ color: TEXT }}>{item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs" style={{ color: TEXT }}>{dateRange(item.startDate, item.endDate, item.current, lang)}</span>
             </div>
             <p className="text-sm" style={{ color: TEXT_DARK }}>{degreeField(item.degree, item.field)}</p>
             {item.gpa && <p className="text-xs" style={{ color: ACCENT }}>GPA: {item.gpa}</p>}
@@ -196,7 +196,7 @@ function WatercolorSectionContent({ section, lang }: { section: any; lang?: stri
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs" style={{ color: TEXT }}>
-                  {item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, lang)}
                 </span>
               )}
             </div>

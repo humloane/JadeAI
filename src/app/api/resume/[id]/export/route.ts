@@ -9,6 +9,7 @@ import { PdfRenderBusyError } from '@/lib/pdf/render-limit';
 import { generateHtml } from './builders';
 import { generatePlainText } from './plain-text';
 import { generateDocxBuffer } from './docx';
+import { getEntitlement, consumeCredit } from '@/lib/pay/entitlement';
 
 // Chromium download + PDF render needs more time on Vercel serverless
 export const maxDuration = 60;
@@ -39,6 +40,18 @@ export async function GET(
     const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
     const filename = `${title}-${ts}`;
 
+    // Paid formats: PDF and DOCX. HTML/TXT/JSON stay free (preview and sharing).
+    const paidFormat = format === 'pdf' || format === 'docx';
+    if (paidFormat) {
+      const entitlement = await getEntitlement(user.id);
+      if (entitlement.credits <= 0) {
+        return NextResponse.json(
+          { error: '导出次数已用完，请先购买', code: 'PAYMENT_REQUIRED' },
+          { status: 402 }
+        );
+      }
+    }
+
     switch (format) {
       case 'json': {
         return NextResponse.json(resume);
@@ -68,6 +81,7 @@ export async function GET(
       }
       case 'docx': {
         const docxBuffer = await generateDocxBuffer(resume);
+        await consumeCredit(user.id);
         return new NextResponse(new Uint8Array(docxBuffer), {
           status: 200,
           headers: {
@@ -79,6 +93,7 @@ export async function GET(
       case 'pdf': {
         const layout = parsePdfLayout(request.nextUrl.searchParams);
         const pdfBuffer = await renderResumePdf(resume, layout);
+        await consumeCredit(user.id);
         return new NextResponse(new Uint8Array(pdfBuffer), {
           status: 200,
           headers: {

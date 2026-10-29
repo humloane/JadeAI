@@ -9,7 +9,7 @@ import type {
   GitHubContent,
   CustomContent,
 } from '@/types/resume';
-import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section } from '../utils';
+import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section, dateRange } from '../utils';
 
 function buildElegantSectionContent(section: Section, lang: string = 'en'): string {
   const c = section.content as any;
@@ -17,7 +17,7 @@ function buildElegantSectionContent(section: Section, lang: string = 'en'): stri
   if (section.type === 'summary') return `<div class="text-center text-sm leading-relaxed text-zinc-600 italic">${md((c as SummaryContent).text)}</div>`;
   if (section.type === 'work_experience') {
     return `<div class="space-y-4">${((c as WorkExperienceContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><div><span class="text-sm font-bold" style="color:#2c2c2c">${esc(it.position)}</span>${it.company ? `<span class="text-sm text-zinc-500"> — ${esc(it.company)}</span>` : ''}</div><span class="shrink-0 text-xs italic text-zinc-400">${esc(it.startDate)} – ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span></div>
+      <div class="flex items-baseline justify-between"><div><span class="text-sm font-bold" style="color:#2c2c2c">${esc(it.position)}</span>${it.company ? `<span class="text-sm text-zinc-500"> — ${esc(it.company)}</span>` : ''}</div><span class="shrink-0 text-xs italic text-zinc-400">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span></div>
       ${it.description ? `<div class="mt-1 text-sm text-zinc-600">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<p class="mt-0.5 text-xs text-zinc-400 italic">${lang === 'zh' ? '技术栈' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 list-disc pl-5">${it.highlights.filter(Boolean).map((h: string) => `<li class="text-sm text-zinc-600">${md(h)}</li>`).join('')}</ul>` : ''}
@@ -25,7 +25,7 @@ function buildElegantSectionContent(section: Section, lang: string = 'en'): stri
   }
   if (section.type === 'education') {
     return `<div class="space-y-3">${((c as EducationContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><div><span class="text-sm font-bold" style="color:#2c2c2c">${esc(degreeField(it.degree, it.field))}</span>${it.institution ? `<span class="text-sm text-zinc-500"> — ${esc(it.institution)}</span>` : ''}</div><span class="shrink-0 text-xs italic text-zinc-400">${esc(it.startDate)} – ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span></div>
+      <div class="flex items-baseline justify-between"><div><span class="text-sm font-bold" style="color:#2c2c2c">${esc(degreeField(it.degree, it.field))}</span>${it.institution ? `<span class="text-sm text-zinc-500"> — ${esc(it.institution)}</span>` : ''}</div><span class="shrink-0 text-xs italic text-zinc-400">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span></div>
       ${it.gpa ? `<p class="text-sm text-zinc-500">GPA: ${esc(it.gpa)}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 list-disc pl-5">${buildHighlights(it.highlights, 'text-sm text-zinc-600')}</ul>` : ''}
     </div>`).join('')}</div>`;
@@ -37,7 +37,7 @@ function buildElegantSectionContent(section: Section, lang: string = 'en'): stri
   }
   if (section.type === 'projects') {
     return `<div class="space-y-4">${((c as ProjectsContent).items || []).map((it: any) => `<div>
-      <div class="flex items-baseline justify-between"><span class="text-sm font-bold" style="color:#2c2c2c">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 text-xs italic text-zinc-400">${esc(it.startDate)} – ${it.endDate ? esc(it.endDate) : (lang === 'zh' ? '至今' : 'Present')}</span>` : ''}</div>
+      <div class="flex items-baseline justify-between"><span class="text-sm font-bold" style="color:#2c2c2c">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 text-xs italic text-zinc-400">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>` : ''}</div>
       ${it.description ? `<div class="mt-1 text-sm text-zinc-600">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<p class="mt-0.5 text-xs text-zinc-400 italic">${lang === 'zh' ? '技术栈' : 'Tech'}: ${esc(it.technologies.join(', '))}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 list-disc pl-5">${buildHighlights(it.highlights, 'text-sm text-zinc-600')}</ul>` : ''}

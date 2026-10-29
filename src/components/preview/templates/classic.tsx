@@ -13,7 +13,7 @@ import type {
   CustomContent,
   GitHubContent,
 } from '@/types/resume';
-import { isSectionEmpty, md, degreeField } from '../utils';
+import { isSectionEmpty, md, degreeField, dateRange } from '../utils';
 import { AvatarImage } from '../avatar-image';
 import { QrCodesPreview } from '../qr-codes-preview';
 
@@ -86,7 +86,7 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
                 {item.company && <span className="text-sm text-zinc-600"> at {item.company}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> , {item.location}</span>}
               </div>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+              <span className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, lang)}</span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
@@ -117,7 +117,7 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
                 {item.institution && <span className="text-sm text-zinc-600"> - {item.institution}</span>}
                 {item.location && <span className="text-sm text-zinc-400"> , {item.location}</span>}
               </div>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, lang)}</span>
             </div>
             {item.gpa && <p className="text-sm text-zinc-500">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
@@ -157,7 +157,7 @@ function SectionContent({ section, lang }: { section: any; lang?: string }) {
               <span className="font-semibold text-zinc-800 text-sm">{item.name}</span>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, lang)}
                 </span>
               )}
             </div>

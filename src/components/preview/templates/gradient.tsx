@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { isSectionEmpty, md, degreeField } from '../utils';
+import { isSectionEmpty, md, degreeField, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 // intentional: gradient template visual identity — pink→purple is the defining aesthetic of this template
@@ -109,7 +109,7 @@ function GradientSectionContent({ section, resume }: { section: any; resume: Res
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold text-zinc-800">{item.position}</h3>
               <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white" style={{ background: GRADIENT }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.company && <p className="text-sm font-medium" style={{ color: ACCENT }}>{item.company}</p>}
@@ -144,7 +144,7 @@ function GradientSectionContent({ section, resume }: { section: any; resume: Res
           <div key={item.id} className="border-l-2 pl-4" style={{ borderImage: GRADIENT, borderImageSlice: 1 }}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold text-zinc-800">{item.institution}</h3>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             <p className="text-sm text-zinc-600">{degreeField(item.degree, item.field)}</p>
             {item.gpa && <p className="text-xs text-zinc-500">GPA: {item.gpa}</p>}
@@ -195,7 +195,7 @@ function GradientSectionContent({ section, resume }: { section: any; resume: Res
               <h3 className="text-sm font-semibold" style={{ color: ACCENT }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

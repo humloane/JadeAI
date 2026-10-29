@@ -14,7 +14,7 @@ import type {
   CustomContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { isSectionEmpty, md, degreeField } from '../utils';
+import { isSectionEmpty, md, degreeField, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const GRADIENT = 'linear-gradient(135deg, #7c3aed 0%, #f97316 100%)';
@@ -198,7 +198,7 @@ function CreativeSectionContent({ section, resume }: { section: any; resume: Res
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

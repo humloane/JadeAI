@@ -27,7 +27,7 @@ interface CreateResumeDialogProps {
 
 type Tab = 'template' | 'upload';
 
-const ACCEPTED_EXTENSIONS = '.pdf,.png,.jpg,.jpeg,.webp';
+const ACCEPTED_EXTENSIONS = '.pdf,.docx,.txt,.png,.jpg,.jpeg,.webp';
 
 export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDialogProps) {
   const t = useTranslations();
@@ -42,6 +42,8 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
+  const [pastedText, setPastedText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCreate = async () => {
@@ -59,7 +61,14 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
 
   const handleFileSelect = (selectedFile: File) => {
     setParseError('');
-    const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
+    const validTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+    ];
     if (!validTypes.includes(selectedFile.type)) {
       setParseError(t('dashboard.upload.invalidType'));
       return;
@@ -103,12 +112,45 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
     }
   };
 
+  const handlePasteParse = async () => {
+    if (!pastedText.trim()) return;
+    setIsParsing(true);
+    setParseError('');
+    try {
+      const fingerprint = typeof window !== 'undefined' ? localStorage.getItem('jade_fingerprint') : null;
+      const formData = new FormData();
+      formData.append('text', pastedText);
+      formData.append('template', template);
+
+      const res = await fetch('/api/resume/parse', {
+        method: 'POST',
+        headers: { ...(fingerprint ? { 'x-fingerprint': fingerprint } : {}), ...getAIHeaders() },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Parse failed');
+      }
+
+      const resume = await res.json();
+      resetAndClose();
+      router.push(`/editor/${resume.id}`);
+    } catch (err: any) {
+      setParseError(err.message || t('dashboard.upload.parseFailed'));
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
   const resetAndClose = () => {
     onClose();
     setTitle('');
     setTemplate('classic');
     setTab('template');
     setFile(null);
+    setPastedText('');
+    setShowPaste(false);
     setParseError('');
   };
 
@@ -285,6 +327,37 @@ export function CreateResumeDialog({ open, onClose, onCreate }: CreateResumeDial
                   }}
                 />
               </div>
+
+              <div className="mt-2 text-center">
+                <button
+                  type="button"
+                  className="cursor-pointer text-sm text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+                  onClick={() => setShowPaste((v) => !v)}
+                >
+                  {showPaste ? '收起粘贴框' : '或者直接粘贴简历文本'}
+                </button>
+              </div>
+
+              {showPaste && (
+                <div className="space-y-2">
+                  <textarea
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                    rows={8}
+                    placeholder="把简历内容粘贴到这里，例如：姓名、电话、工作经历、教育背景…"
+                    className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 outline-none focus:border-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handlePasteParse}
+                    disabled={isParsing || !pastedText.trim()}
+                    className="w-full"
+                  >
+                    {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    解析粘贴内容
+                  </Button>
+                </div>
+              )}
 
               {parseError && (
                 <p className="text-sm text-red-500">{parseError}</p>

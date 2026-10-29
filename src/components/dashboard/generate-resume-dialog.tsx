@@ -40,11 +40,34 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
   const [skills, setSkills] = useState('');
   const [industry, setIndustry] = useState('');
   const [experience, setExperience] = useState('');
+  const [extra, setExtra] = useState({
+    period: '',
+    education: '',
+    daily: '',
+    deliver: '',
+    tools: '',
+    scale: '',
+  });
   const [template, setTemplate] = useState('classic');
   const [language, setLanguage] = useState(locale);
   const [state, setState] = useState<GenerateState>('form');
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ resumeId: string; title: string } | null>(null);
+
+  const buildExperience = () => {
+    const labels: [keyof typeof extra, string][] = [
+      ['period', '在职时间'],
+      ['education', '最高学历与专业'],
+      ['daily', '每天做的事'],
+      ['deliver', '做完交给谁'],
+      ['tools', '使用的工具'],
+      ['scale', '负责范围或规模'],
+    ];
+    const filled = labels
+      .filter(([k]) => extra[k].trim())
+      .map(([k, label]) => `${label}：${extra[k].trim()}`);
+    return [experience.trim(), ...filled].filter(Boolean).join('\n');
+  };
 
   const handleGenerate = async () => {
     if (!jobTitle.trim()) return;
@@ -67,7 +90,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
             ? skills.split(/[\s,，、]+/).map(s => s.trim()).filter(Boolean)
             : undefined,
           industry: industry.trim() || undefined,
-          experience: experience.trim() || undefined,
+          experience: buildExperience() || undefined,
           template,
           language,
         }),
@@ -109,6 +132,7 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
       setSkills('');
       setIndustry('');
       setExperience('');
+      setExtra({ period: '', education: '', daily: '', deliver: '', tools: '', scale: '' });
       setTemplate('classic');
       setLanguage(locale);
       setError('');
@@ -191,6 +215,48 @@ export function GenerateResumeDialog({ open, onOpenChange, onCreated }: Generate
                   rows={4}
                   className="resize-none"
                 />
+              </div>
+
+              {/* Interview prompts: answer a few plain questions instead of writing a resume */}
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50/60 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+                <div className="mb-2 flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    不会写？回答下面几句就够了
+                  </p>
+                  <span className="text-xs text-zinc-400">可只填一部分</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={extra.period}
+                    onChange={(e) => setExtra((p) => ({ ...p, period: e.target.value }))}
+                    placeholder="这份工作大概从什么时候到什么时候"
+                  />
+                  <Input
+                    value={extra.education}
+                    onChange={(e) => setExtra((p) => ({ ...p, education: e.target.value }))}
+                    placeholder="最高学历、学校、专业、毕业年份"
+                  />
+                  <Input
+                    value={extra.tools}
+                    onChange={(e) => setExtra((p) => ({ ...p, tools: e.target.value }))}
+                    placeholder="用什么工具：Excel、系统后台、纸质表格…"
+                  />
+                  <Input
+                    value={extra.deliver}
+                    onChange={(e) => setExtra((p) => ({ ...p, deliver: e.target.value }))}
+                    placeholder="做完交给谁，他拿它干什么"
+                  />
+                  <Input
+                    value={extra.scale}
+                    onChange={(e) => setExtra((p) => ({ ...p, scale: e.target.value }))}
+                    placeholder="负责多大范围，几个人一起干"
+                  />
+                  <Input
+                    value={extra.daily}
+                    onChange={(e) => setExtra((p) => ({ ...p, daily: e.target.value }))}
+                    placeholder="每天上班第一件事做什么，多久做一次"
+                  />
+                </div>
               </div>
 
               {/* Row 2: Language + Template */}

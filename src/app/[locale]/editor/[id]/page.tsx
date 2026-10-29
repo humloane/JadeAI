@@ -26,6 +26,8 @@ import { ImportDialog } from '@/components/editor/import-dialog';
 import { ShareDialog } from '@/components/editor/share-dialog';
 import { CoverLetterDialog } from '@/components/editor/cover-letter-dialog';
 import { GrammarCheckDialog } from '@/components/editor/grammar-check-dialog';
+import { ScoreDialog } from '@/components/editor/score-dialog';
+import { UpgradeDialog } from '@/components/pay/upgrade-dialog';
 import { TourOverlay, type TourStepConfig } from '@/components/tour/tour-overlay';
 import { useEditorStore } from '@/stores/editor-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -221,6 +223,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         open={activeModal === 'grammar-check'}
         onOpenChange={(open) => open ? openModal('grammar-check') : closeModal()}
         resumeId={id}
+      />
+      <ScoreDialog
+        open={activeModal === 'score'}
+        onOpenChange={(open) => open ? openModal('score') : closeModal()}
+        resumeId={id}
+      />
+      <UpgradeDialog
+        open={activeModal === 'upgrade'}
+        onOpenChange={(open) => open ? openModal('upgrade') : closeModal()}
       />
       <TourOverlay tourId="editor" steps={EDITOR_TOUR_STEPS} />
     </div>

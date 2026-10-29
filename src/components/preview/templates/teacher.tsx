@@ -2,7 +2,7 @@
 
 import type { Resume, PersonalInfoContent, SummaryContent, WorkExperienceContent, EducationContent, SkillsContent, ProjectsContent, CertificationsContent, LanguagesContent, GitHubContent, CustomContent } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#9a3412';
@@ -93,7 +93,7 @@ function TeacherSectionContent({ section, resume }: { section: any; resume: Resu
                 {item.company && <span className="text-sm" style={{ color: ACCENT }}> at {item.company}</span>}
               </div>
               <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: '#fed7aa', color: PRIMARY }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.description && <p className="mt-1 text-sm" style={{ color: BODY_TEXT }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
@@ -135,7 +135,7 @@ function TeacherSectionContent({ section, resume }: { section: any; resume: Resu
                 {item.institution && <span className="text-sm" style={{ color: MUTED }}> — {item.institution}</span>}
               </div>
               <span className="shrink-0 text-xs" style={{ color: MUTED }}>
-                {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.gpa && <p className="text-xs" style={{ color: MUTED }}>GPA: {item.gpa}</p>}
@@ -183,7 +183,7 @@ function TeacherSectionContent({ section, resume }: { section: any; resume: Resu
               <span className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</span>
               {item.startDate && (
                 <span className="shrink-0 text-xs" style={{ color: MUTED }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#78350f';
@@ -106,7 +106,7 @@ function RetroSectionContent({ section, resume }: { section: any; resume: Resume
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.position}</h3>
               <span className="shrink-0 text-xs" style={{ color: ACCENT, fontFamily: "'Courier New', monospace" }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.company && <p className="text-sm italic" style={{ color: ACCENT }}>{item.company}</p>}
@@ -140,7 +140,7 @@ function RetroSectionContent({ section, resume }: { section: any; resume: Resume
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.institution}</h3>
-              <span className="text-xs" style={{ color: ACCENT, fontFamily: "'Courier New', monospace" }}>{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs" style={{ color: ACCENT, fontFamily: "'Courier New', monospace" }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             <p className="text-sm" style={{ color: '#57534e' }}>{degreeField(item.degree, item.field)}</p>
             {item.gpa && <p className="text-xs" style={{ color: ACCENT }}>GPA: {item.gpa}</p>}
@@ -184,7 +184,7 @@ function RetroSectionContent({ section, resume }: { section: any; resume: Resume
               <h3 className="text-sm font-bold" style={{ color: PRIMARY }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs" style={{ color: ACCENT, fontFamily: "'Courier New', monospace" }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

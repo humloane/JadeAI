@@ -5,6 +5,8 @@ import type { ParsedResume } from '@/lib/ai/parse-schema';
 
 export const ACCEPTED_RESUME_TYPES = [
   'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
   'image/png',
   'image/jpeg',
   'image/webp',
@@ -38,7 +40,7 @@ export class ResumeParseError extends Error {
 /** 文件类型/大小校验。通过返回 null，不通过返回错误信息。 */
 export function validateResumeFile(file: File): string | null {
   if (!ACCEPTED_RESUME_TYPES.includes(file.type)) {
-    return 'Unsupported file type. Accepted: PDF, PNG, JPG, WebP';
+    return 'Unsupported file type. Accepted: PDF, Word (.docx), TXT, PNG, JPG, WebP';
   }
   if (file.size > MAX_RESUME_FILE_SIZE) {
     return 'File too large. Maximum size: 10MB';
@@ -60,8 +62,23 @@ export async function parseResumeFile(file: File, aiConfig: AIConfig): Promise<P
   // Build messages based on file type
   const messages: ModelMessage[] = [];
   const isPdf = file.type === 'application/pdf';
+  const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const isText = file.type === 'text/plain';
 
-  if (isPdf) {
+  if (isDocx || isText) {
+    // Word (.docx) and plain text: extract the text, then let the model structure it.
+    const text = isDocx
+      ? (await (await import('mammoth')).extractRawText({ buffer })).value
+      : buffer.toString('utf-8');
+    if (!text.trim()) {
+      throw new ResumeParseError('文档里没有可识别的文字');
+    }
+    console.log('[parse] %s text extraction: %d chars', isDocx ? 'DOCX' : 'TXT', text.length);
+    messages.push({
+      role: 'user',
+      content: `Below is the text extracted from a resume document. Extract all resume information using the EXACT JSON schema from the system prompt.\n\n---\n${text}\n---`,
+    });
+  } else if (isPdf) {
     // Try to extract text from PDF first
     const pdfText = await extractPdfText(buffer);
 
@@ -116,6 +133,34 @@ export async function parseResumeFile(file: File, aiConfig: AIConfig): Promise<P
   }
 
   // Map to our schema (handles models that return different field names)
+  return mapToResumeSchema(raw as Record<string, unknown>);
+}
+
+
+/** Parse resume text the user pasted instead of uploading a file. */
+export async function parseResumeText(text: string, aiConfig: AIConfig): Promise<ParsedResume> {
+  const clean = (text || '').trim();
+  if (clean.length < 20) {
+    throw new ResumeParseError('粘贴的内容太短，无法识别');
+  }
+  const model = getModel(aiConfig);
+  const result = await generateText({
+    model,
+    maxOutputTokens: 16384,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: `Below is a resume the candidate pasted as plain text. Extract all resume information using the EXACT JSON schema from the system prompt.\n\n---\n${clean}\n---`,
+      },
+    ],
+    providerOptions: getJsonProviderOptions(aiConfig),
+  });
+
+  const raw = parseJsonFromText(result.text);
+  if (!raw || typeof raw !== 'object') {
+    throw new ResumeParseError('Failed to extract resume data');
+  }
   return mapToResumeSchema(raw as Record<string, unknown>);
 }
 

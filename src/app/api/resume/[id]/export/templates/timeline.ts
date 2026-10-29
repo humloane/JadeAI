@@ -1,5 +1,5 @@
 import type { GitHubContent } from '@/types/resume';
-import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section } from '../utils';
+import { esc, md, degreeField, getPersonalInfo, visibleSections, buildHighlights, buildQrCodesHtml, type ResumeWithSections, type Section, dateRange } from '../utils';
 
 function buildTimelineSectionContent(s: Section, lang: string): string {
   const c = s.content as any;
@@ -14,7 +14,7 @@ function buildTimelineSectionContent(s: Section, lang: string): string {
       <div class="absolute -left-[31px] top-1 h-4 w-4 rounded-full border-2 bg-white" style="border-color:${AC}"></div>
       <div class="flex items-baseline justify-between">
         <div><span class="text-sm font-bold" style="color:${BG}">${esc(it.position)}</span>${it.company ? `<span class="text-sm text-zinc-500"> | ${esc(it.company)}</span>` : ''}</div>
-        <span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(it.startDate)} – ${esc(it.endDate) || (it.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</span>
+        <span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>
       </div>
       ${it.description ? `<div class="mt-1 text-sm text-zinc-600">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<div class="mt-1 flex flex-wrap gap-1">${it.technologies.map((t: string) => `<span class="rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(t)}</span>`).join('')}</div>` : ''}
@@ -28,7 +28,7 @@ function buildTimelineSectionContent(s: Section, lang: string): string {
       <div class="absolute -left-[31px] top-1 h-4 w-4 rounded-full border-2 bg-white" style="border-color:${AC}"></div>
       <div class="flex items-baseline justify-between">
         <div><span class="text-sm font-bold" style="color:${BG}">${esc(degreeField(it.degree, it.field))}</span>${it.institution ? `<span class="text-sm text-zinc-500"> — ${esc(it.institution)}</span>` : ''}</div>
-        <span class="shrink-0 text-xs text-zinc-400">${esc(it.startDate)} – ${esc(it.endDate) || (lang === 'zh' ? '至今' : 'Present')}</span>
+        <span class="shrink-0 text-xs text-zinc-400">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>
       </div>
       ${it.gpa ? `<p class="text-sm text-zinc-500">GPA: ${esc(it.gpa)}</p>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 list-disc pl-4">${buildHighlights(it.highlights, 'text-sm text-zinc-600')}</ul>` : ''}
@@ -45,7 +45,7 @@ function buildTimelineSectionContent(s: Section, lang: string): string {
     const items = c.items || [];
     return `<div class="relative border-l-2 pl-6 ml-2" style="border-color:#e2e8f0">${items.map((it: any, idx: number) => `<div class="relative${idx < items.length - 1 ? ' pb-5' : ''}">
       <div class="absolute -left-[31px] top-1 h-4 w-4 rounded-full border-2 bg-white" style="border-color:${AC}"></div>
-      <div class="flex items-baseline justify-between"><span class="text-sm font-bold" style="color:${BG}">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(it.startDate)} – ${it.endDate ? esc(it.endDate) : (lang === 'zh' ? '至今' : 'Present')}</span>` : ''}</div>
+      <div class="flex items-baseline justify-between"><span class="text-sm font-bold" style="color:${BG}">${esc(it.name)}</span>${it.startDate ? `<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(dateRange(it.startDate, it.endDate, it.current, lang))}</span>` : ''}</div>
       ${it.description ? `<div class="mt-1 text-sm text-zinc-600">${md(it.description)}</div>` : ''}
       ${it.technologies?.length ? `<div class="mt-1 flex flex-wrap gap-1">${it.technologies.map((t: string) => `<span class="rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:#eff6ff;color:${AC}">${esc(t)}</span>`).join('')}</div>` : ''}
       ${it.highlights?.length ? `<ul class="mt-1 list-disc pl-4">${buildHighlights(it.highlights, 'text-sm text-zinc-600')}</ul>` : ''}

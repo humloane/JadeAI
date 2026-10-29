@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#37352f';
@@ -100,7 +100,7 @@ function BlocksSectionContent({ section, resume }: { section: any; resume: Resum
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold" style={{ color: PRIMARY }}>{item.position}</h3>
               <span className="shrink-0 text-xs" style={{ color: '#9b9a97' }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.company && <p className="text-sm" style={{ color: ACCENT }}>{item.company}{item.location ? ` , ${item.location}` : ''}</p>}
@@ -135,7 +135,7 @@ function BlocksSectionContent({ section, resume }: { section: any; resume: Resum
           <div key={item.id} className="rounded-md border p-3" style={{ borderColor: '#e3e2de' }}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-semibold" style={{ color: PRIMARY }}>{item.institution}</h3>
-              <span className="text-xs" style={{ color: '#9b9a97' }}>{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs" style={{ color: '#9b9a97' }}>{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             <p className="text-sm" style={{ color: '#787774' }}>{degreeField(item.degree, item.field)}{item.location ? ` , ${item.location}` : ''}</p>
             {item.gpa && <p className="text-xs" style={{ color: '#9b9a97' }}>GPA: {item.gpa}</p>}
@@ -190,7 +190,7 @@ function BlocksSectionContent({ section, resume }: { section: any; resume: Resum
               <h3 className="text-sm font-semibold" style={{ color: ACCENT }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs" style={{ color: '#9b9a97' }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

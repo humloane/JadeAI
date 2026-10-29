@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, Undo2, Redo2, Download, Upload, Settings, Palette, Save, FileSearch, Languages, FileText, SpellCheck, Share2, MoreHorizontal } from 'lucide-react';
+import { Sparkles, ArrowLeft, Undo2, Redo2, Download, Upload, Settings, Palette, Save, FileSearch, Languages, FileText, SpellCheck, Share2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -175,6 +175,16 @@ export function EditorToolbar({ resumeId }: EditorToolbarProps) {
             <SpellCheck className="h-4 w-4" />
             <span className="ml-1 text-xs hidden sm:inline">{t('grammarCheck')}</span>
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openModal('score')}
+            className="cursor-pointer"
+            title="简历评分"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="ml-1 text-xs hidden sm:inline">评分</span>
+          </Button>
           <Separator orientation="vertical" className="h-6" />
           <Button
             variant="ghost"
@@ -223,6 +233,14 @@ export function EditorToolbar({ resumeId }: EditorToolbarProps) {
               <DropdownMenuItem onClick={() => openModal('grammar-check')}>
                 <SpellCheck className="mr-2 h-4 w-4" />
                 {t('grammarCheck')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openModal('score')}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                简历评分
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openModal('upgrade')}>
+                <Download className="mr-2 h-4 w-4" />
+                购买导出次数
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openModal('settings')}>
                 <Settings className="mr-2 h-4 w-4" />

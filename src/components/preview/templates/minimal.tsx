@@ -1,7 +1,7 @@
 'use client';
 
 import type { Resume, PersonalInfoContent, SummaryContent, WorkExperienceContent, EducationContent, SkillsContent, ProjectsContent, CertificationsContent, LanguagesContent, CustomContent, GitHubContent } from '@/types/resume';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { AvatarImage } from '../avatar-image';
 import { QrCodesPreview } from '../qr-codes-preview';
 
@@ -68,7 +68,7 @@ function MinimalSectionContent({ section, lang }: { section: any; lang?: string 
         {(content.items || []).map((item: any) => (
           <div key={item.id}>
             <p className="text-sm"><span className="font-medium text-zinc-800">{item.position}</span> {item.company && <span className="text-zinc-500">/ {item.company}</span>}</p>
-            <p className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (item.current ? (lang === 'zh' ? '至今' : 'Present') : '')}</p>
+            <p className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, lang)}</p>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (
               <p className="mt-0.5 text-xs text-zinc-400">{item.technologies.join(' / ')}</p>
@@ -93,7 +93,7 @@ function MinimalSectionContent({ section, lang }: { section: any; lang?: string 
           <div key={item.id}>
             <p className="text-sm"><span className="font-medium text-zinc-800">{item.institution}</span></p>
             <p className="text-sm text-zinc-600">{degreeField(item.degree, item.field)}</p>
-            <p className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</p>
+            <p className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, lang)}</p>
             {item.gpa && <p className="text-xs text-zinc-400">GPA: {item.gpa}</p>}
             {item.highlights?.length > 0 && (
               <ul className="mt-1 list-disc pl-4">
@@ -126,7 +126,7 @@ function MinimalSectionContent({ section, lang }: { section: any; lang?: string 
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-medium text-zinc-800">{item.name}</span>
-              {item.startDate && <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (lang === 'zh' ? '至今' : 'Present')}</span>}
+              {item.startDate && <span className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, lang)}</span>}
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
             {item.technologies?.length > 0 && (

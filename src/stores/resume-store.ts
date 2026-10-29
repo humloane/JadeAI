@@ -52,7 +52,7 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
     // opened and repaired instead of crashing the editor on render.
     const sections = (resume.sections || []).map((s) => ({
       ...s,
-      content: normalizeSectionContent(s.type, s.content) as unknown as typeof s.content,
+      content: normalizeSectionContent(s.type, s.content, resume.language) as unknown as typeof s.content,
     }));
 
     set({

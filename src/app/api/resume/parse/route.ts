@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractAIConfig, AIConfigError } from '@/lib/ai/provider';
 import { resolveUser, getUserIdFromRequest } from '@/lib/auth/helpers';
 import { resumeRepository } from '@/lib/db/repositories/resume.repository';
-import { parseResumeFile, validateResumeFile, ResumeParseError } from '@/lib/ai/parse-resume';
+import { parseResumeFile, parseResumeText, validateResumeFile, ResumeParseError } from '@/lib/ai/parse-resume';
 import type { ParsedResume } from '@/lib/ai/parse-schema';
 
 export async function POST(request: NextRequest) {
@@ -18,17 +18,24 @@ export async function POST(request: NextRequest) {
     const template = (formData.get('template') as string) || 'classic';
     const language = (formData.get('language') as string) || 'zh';
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    }
+    const pastedText = (formData.get('text') as string) || '';
 
-    const invalid = validateResumeFile(file);
-    if (invalid) {
-      return NextResponse.json({ error: invalid }, { status: 400 });
+    if (!file && !pastedText.trim()) {
+      return NextResponse.json({ error: 'No file or text provided' }, { status: 400 });
     }
 
     const aiConfig = extractAIConfig(request);
-    const resumeData = await parseResumeFile(file, aiConfig);
+
+    let resumeData;
+    if (file) {
+      const invalid = validateResumeFile(file);
+      if (invalid) {
+        return NextResponse.json({ error: invalid }, { status: 400 });
+      }
+      resumeData = await parseResumeFile(file, aiConfig);
+    } else {
+      resumeData = await parseResumeText(pastedText, aiConfig);
+    }
 
     // Create resume with parsed data
     const resume = await resumeRepository.create({

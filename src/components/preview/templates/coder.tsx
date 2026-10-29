@@ -14,7 +14,7 @@ import type {
   GitHubContent,
 } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const DARK = '#0d1117';
@@ -287,7 +287,7 @@ function CoderMainContent({ section, resume }: { section: any; resume: Resume })
                 {item.location && <span className="text-xs text-zinc-400">, {item.location}</span>}
               </div>
               <span className="shrink-0 rounded px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: '#f6f8fa', color: '#57606a' }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.description && <p className="mt-1 text-sm text-zinc-600" dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
@@ -324,7 +324,7 @@ function CoderMainContent({ section, resume }: { section: any; resume: Resume })
           <div key={item.id}>
             <div className="flex items-baseline justify-between">
               <h3 className="text-sm font-bold" style={{ color: DARK }}>{item.institution}</h3>
-              <span className="text-xs text-zinc-400">{item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}</span>
+              <span className="text-xs text-zinc-400">{dateRange(item.startDate, item.endDate, item.current, resume.language)}</span>
             </div>
             <p className="text-sm text-zinc-600">
               {degreeField(item.degree, item.field)}
@@ -357,7 +357,7 @@ function CoderMainContent({ section, resume }: { section: any; resume: Resume })
               <h3 className="text-sm font-bold" style={{ color: BLUE }}>{item.name}</h3>
               {item.startDate && (
                 <span className="text-xs text-zinc-400">
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

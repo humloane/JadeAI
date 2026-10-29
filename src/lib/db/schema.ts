@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
   name: text('name'),
   avatarUrl: text('avatar_url'),
   fingerprint: text('fingerprint').unique(),
+  passwordHash: text('password_hash'),
   authType: text('auth_type', { enum: ['oauth', 'fingerprint', 'local'] }).notNull(),
   settings: text('settings', { mode: 'json' }).default('{}'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
@@ -114,3 +115,43 @@ export {
   recruitCandidates,
   recruitEvaluations,
 } from './schema-recruit';
+
+export const orders = sqliteTable('orders', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id),
+  plan: text('plan').notNull(),
+  amountCents: integer('amount_cents').notNull(),
+  credits: integer('credits').notNull().default(0),
+  status: text('status', { enum: ['pending', 'submitted', 'paid', 'cancelled'] })
+    .notNull()
+    .default('pending'),
+  note: text('note'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  paidAt: integer('paid_at', { mode: 'timestamp' }),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }),
+});
+
+export const siteSettings = sqliteTable('site_settings', {
+  key: text('key').primaryKey(),
+  value: text('value', { mode: 'json' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+});
+
+export const plans = sqliteTable('plans', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  priceCents: integer('price_cents').notNull(),
+  credits: integer('credits').notNull(),
+  days: integer('days'),
+  description: text('description'),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  sortOrder: integer('sort_order').notNull().default(0),
+});
+
+export const templates = sqliteTable('templates', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+  sortOrder: integer('sort_order').notNull().default(0),
+  custom: integer('custom', { mode: 'boolean' }).notNull().default(false),
+});

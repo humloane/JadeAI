@@ -2,7 +2,7 @@
 
 import type { Resume, PersonalInfoContent, SummaryContent, WorkExperienceContent, EducationContent, SkillsContent, ProjectsContent, CertificationsContent, LanguagesContent, GitHubContent, CustomContent } from '@/types/resume';
 import { AvatarImage } from '../avatar-image';
-import { degreeField, isSectionEmpty, md } from '../utils';
+import { degreeField, isSectionEmpty, md, dateRange } from '../utils';
 import { QrCodesPreview } from '../qr-codes-preview';
 
 const PRIMARY = '#0f172a';
@@ -98,7 +98,7 @@ function ScientistSectionContent({ section, resume }: { section: any; resume: Re
                 {item.company && <span className="text-sm" style={{ color: MUTED }}>, {item.company}</span>}
               </div>
               <span className="shrink-0 text-xs" style={{ color: MUTED }}>
-                {item.startDate} - {item.endDate || (item.current ? (resume.language === 'zh' ? '至今' : 'Present') : '')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.description && <p className="mt-1 pl-6 text-sm" style={{ color: BODY_TEXT }} dangerouslySetInnerHTML={{ __html: md(item.description) }} />}
@@ -135,7 +135,7 @@ function ScientistSectionContent({ section, resume }: { section: any; resume: Re
                 {item.institution && <span className="text-sm" style={{ color: MUTED }}>, {item.institution}</span>}
               </div>
               <span className="shrink-0 text-xs" style={{ color: MUTED }}>
-                {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                {dateRange(item.startDate, item.endDate, item.current, resume.language)}
               </span>
             </div>
             {item.gpa && <p className="pl-6 text-xs" style={{ color: MUTED }}>GPA: {item.gpa}</p>}
@@ -180,7 +180,7 @@ function ScientistSectionContent({ section, resume }: { section: any; resume: Re
               </div>
               {item.startDate && (
                 <span className="shrink-0 text-xs" style={{ color: MUTED }}>
-                  {item.startDate} - {item.endDate || (resume.language === 'zh' ? '至今' : 'Present')}
+                  {dateRange(item.startDate, item.endDate, item.current, resume.language)}
                 </span>
               )}
             </div>

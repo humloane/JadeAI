@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { LoginButton } from '@/components/auth/login-button';
+import { PasswordLoginForm } from '@/components/auth/password-login-form';
 import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
@@ -31,9 +31,9 @@ export default function LoginPage() {
       {/* Divider */}
       <Separator className="my-6" />
 
-      {/* Login button */}
+      {/* Email + password (primary) and Google (only when configured) */}
       <Suspense fallback={null}>
-        <LoginButton />
+        <PasswordLoginForm googleEnabled={Boolean(process.env.GOOGLE_CLIENT_ID)} />
       </Suspense>
 
       {/* Terms */}

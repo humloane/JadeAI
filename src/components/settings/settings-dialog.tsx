@@ -66,6 +66,7 @@ export function SettingsDialog() {
 
   const startTour = useTourStore((s) => s.startTour);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [managedAI, setManagedAI] = useState(false);
   const isOpen = activeModal === 'settings';
 
   // Model combobox state
@@ -75,6 +76,13 @@ export function SettingsDialog() {
   const [modelsFetching, setModelsFetching] = useState(false);
   const [modelsFetched, setModelsFetched] = useState(false);
   const modelSearchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/ai/config-status')
+      .then((r) => r.json())
+      .then((d) => setManagedAI(Boolean(d?.managed)))
+      .catch(() => setManagedAI(false));
+  }, []);
 
   useEffect(() => {
     if (isOpen && !_hydrated) {
@@ -168,6 +176,11 @@ export function SettingsDialog() {
 
           {/* AI Configuration Tab */}
           <TabsContent value="ai" className="px-6 pb-6 pt-4 space-y-5">
+            {managedAI && (
+              <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-400">
+                本站已统一配置 AI，无需填写以下内容，直接用即可。
+              </div>
+            )}
             {/* Provider */}
             <div className="space-y-2">
               <Label>{t('ai.provider')}</Label>

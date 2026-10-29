@@ -24,23 +24,41 @@ const SECTION_TITLES: Record<string, Record<string, string>> = {
   },
 };
 
-function getSystemPrompt(language: string): string {
+type EmbellishLevel = 'conservative' | 'standard' | 'bold';
+
+const EMBELLISH_RULES: Record<EmbellishLevel, string> = {
+  conservative: `EMBELLISHMENT LEVEL: conservative (an interview and/or background check is likely).
+- Only rewrite the candidate's wording into professional written language.
+- Do NOT add scope, duties, tools, frequency, achievements or numbers the candidate did not state.`,
+  standard: `EMBELLISHMENT LEVEL: standard.
+- You MAY add routine context that follows from what the candidate described: how often the task ran, who it served, which ordinary tools that role uses.
+- Do NOT add numbers, achievements, team sizes, revenue or results the candidate did not state.`,
+  bold: `EMBELLISHMENT LEVEL: bold (mass applications, an interview is unlikely).
+- You MAY add common responsibilities that belong to the target role.
+- Still no numbers, no company or school names, no degrees or certificates.`,
+};
+
+function getSystemPrompt(language: string, level: EmbellishLevel = 'standard'): string {
   const lang = language === 'en' ? 'English' : 'Simplified Chinese';
 
-  return `You are a professional resume writer. Generate a complete, realistic, and professional resume in ${lang}.
+  return `You are a professional resume writer. Write the resume in ${lang}.
 
-Resume generation guidelines:
-- Generate realistic and professional content that would be appropriate for the given job title and experience level
-- Use concrete, quantifiable achievements (e.g., "Increased performance by 40%", "Led a team of 8 engineers")
-- Create believable company names, institution names, and project names
-- Use strong action verbs to start bullet points (e.g., "Spearheaded", "Architected", "Optimized")
-- Dates should be in YYYY-MM format
-- For personal_info, generate a plausible name, email, phone, and location — do NOT use obviously fake data like "John Doe" or "jane@example.com"
-- Skills should be organized into relevant categories (e.g., "Programming Languages", "Frameworks", "Tools")
-- The number of work experience items should scale with years of experience (1-2 for junior, 2-3 for mid, 3-4 for senior)
-- Include 1-2 education entries
-- Include 2-3 project entries with realistic technologies
-- Each work experience and project should have 3-5 highlight bullet points
+ABSOLUTE RULES (these override everything below):
+1. Never invent identity facts: real name, phone, email, city, company names, school names, degrees, majors, graduation dates, certificates. When the candidate did not provide a value, return an empty string "" for that field.
+2. Never invent numbers: no percentages, amounts, counts, team sizes, revenue, rankings or time saved. If the candidate gave no number, express the outcome through the scope, frequency, object or result their description actually supports.
+3. Interview safety: every bullet must be something the candidate can answer questions about. If a sentence would need a fact the candidate does not have, do not write it.
+4. You MAY restructure and polish: turn spoken language into professional written language, split one duty into 2-4 concrete responsibility bullets, start bullets with strong verbs, and state the work context the description implies.
+
+${EMBELLISH_RULES[level]}
+
+Output rules:
+- Dates in YYYY-MM.
+- If years of experience is 0, output at most 1 work item (internship or part-time) or none.
+- personal_info: leave every unknown field as "".
+- Skills: group into categories that fit the target role.
+- Each work item: 2-4 highlight bullets. Do not pad to a fixed count.
+- Dates: use the range the candidate gave. Never output the same start and end month. If the role is ongoing, set endDate to null and current to true. If the candidate gave no dates, leave startDate and endDate as "" and current as false; never guess.
+- Education: include startDate/endDate only when the candidate provided them (a graduation year is enough); otherwise leave both as "".
 - CRITICAL: You are a JSON API. Your entire response must be a single valid JSON object starting with { and ending with }. Do NOT use markdown syntax. Do NOT wrap in code fences. Do NOT add any text before or after the JSON.`;
 }
 
@@ -57,6 +75,50 @@ const generateResumeOutputSchema = z.object({
   projects: z.any(),
 });
 
+
+/**
+ * Keep generated dates honest and renderable:
+ * - no start date -> no end date and not current
+ * - identical start/end -> drop the end date
+ * - empty end date on a finished role -> current stays false
+ */
+function normalizeGeneratedDates(data: GenerateResumeOutput): void {
+  const work = (data as any)?.work_experience?.items;
+  if (Array.isArray(work)) {
+    for (const item of work) {
+      if (!item) continue;
+      const start = typeof item.startDate === 'string' ? item.startDate.trim() : '';
+      const end = typeof item.endDate === 'string' ? item.endDate.trim() : '';
+      if (!start) {
+        item.startDate = '';
+        item.endDate = null;
+        item.current = false;
+        continue;
+      }
+      if (start && end && start === end) {
+        item.endDate = null;
+        item.current = false;
+      }
+      if (!end && item.current !== true) item.current = false;
+    }
+  }
+
+  const education = (data as any)?.education?.items;
+  if (Array.isArray(education)) {
+    for (const item of education) {
+      if (!item) continue;
+      const start = typeof item.startDate === 'string' ? item.startDate.trim() : '';
+      const end = typeof item.endDate === 'string' ? item.endDate.trim() : '';
+      if (!start && !end) {
+        item.startDate = '';
+        item.endDate = '';
+      } else if (start && end && start === end) {
+        item.endDate = '';
+      }
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const fingerprint = getUserIdFromRequest(request);
@@ -66,6 +128,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const rawLevel = (body as { embellishLevel?: string })?.embellishLevel;
+    const level: EmbellishLevel =
+      rawLevel === 'conservative' || rawLevel === 'bold' ? rawLevel : 'standard';
     const parsed = generateResumeInputSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -90,7 +155,9 @@ export async function POST(request: NextRequest) {
       ? `\n\nThe candidate provided the following work experience description. Parse this into structured work_experience items, and use it to inform the summary, skills, and projects sections:\n---\n${experience}\n---`
       : '';
 
-    const promptText = `Generate a complete resume for a ${jobTitle} ${yearsOfExperience === 0 ? 'at entry level (fresh graduate / no prior experience)' : `with ${yearsOfExperience} years of experience`}.${skillsContext}${industryContext}${experienceContext}
+    const promptText = `Build the resume for a ${jobTitle} ${yearsOfExperience === 0 ? 'at entry level (fresh graduate / no prior experience)' : `with ${yearsOfExperience} years of experience`}.${skillsContext}${industryContext}${experienceContext}
+
+Use ONLY the candidate's facts above. Leave unknown fields as "".
 
 Return a JSON object with these exact top-level keys: personal_info, summary, work_experience, education, skills, projects.
 
@@ -110,7 +177,7 @@ Respond with JSON only.`;
       generateText({
         model,
         maxOutputTokens: 16384,
-        system: getSystemPrompt(lang),
+        system: getSystemPrompt(lang, level),
         prompt: promptText,
         providerOptions,
       });
@@ -131,6 +198,7 @@ Respond with JSON only.`;
     }
 
     const generatedData: GenerateResumeOutput = extractJson(result.text, generateResumeOutputSchema) as GenerateResumeOutput;
+    normalizeGeneratedDates(generatedData);
 
     // Create a new resume in the database
     const resumeTitle = lang === 'zh'
@@ -162,7 +230,7 @@ Respond with JSON only.`;
         title: titles[type],
         sortOrder: i,
         // Guard against the model returning list fields as strings (issue #87).
-        content: normalizeSectionContent(type, content),
+        content: normalizeSectionContent(type, content, lang),
       });
     }
 

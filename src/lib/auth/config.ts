@@ -4,32 +4,54 @@ import Credentials from 'next-auth/providers/credentials';
 import { config } from '@/lib/config';
 import { userRepository } from '@/lib/db/repositories/user.repository';
 import { createSampleResume } from '@/lib/db/sample-resume';
+import { verifyPassword } from '@/lib/auth/password';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  providers: config.auth.enabled
-    ? [
-        Google({
-          clientId: process.env.GOOGLE_CLIENT_ID!,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        }),
-      ]
-    : [
-        Credentials({
-          name: 'Fingerprint',
-          credentials: {
-            fingerprint: { label: 'Fingerprint', type: 'text' },
-          },
-          async authorize(credentials) {
-            const fingerprint = credentials?.fingerprint as string;
-            if (!fingerprint) return null;
-            return {
-              id: `fp_${fingerprint}`,
-              name: 'Anonymous User',
-            };
-          },
-        }),
-      ],
+  providers: [
+    // Email + password. Always available so the site works without OAuth.
+    Credentials({
+      id: 'password',
+      name: 'Email',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        const email = String(credentials?.email || '').trim().toLowerCase();
+        const password = String(credentials?.password || '');
+        if (!email || !password) return null;
+        const dbUser = await userRepository.findByEmail(email);
+        if (!dbUser || !verifyPassword(password, dbUser.passwordHash)) return null;
+        return { id: dbUser.id, email: dbUser.email, name: dbUser.name };
+      },
+    }),
+    ...(config.auth.enabled
+      ? process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+        ? [
+            Google({
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            }),
+          ]
+        : []
+      : [
+          Credentials({
+            name: 'Fingerprint',
+            credentials: {
+              fingerprint: { label: 'Fingerprint', type: 'text' },
+            },
+            async authorize(credentials) {
+              const fingerprint = credentials?.fingerprint as string;
+              if (!fingerprint) return null;
+              return {
+                id: `fp_${fingerprint}`,
+                name: 'Anonymous User',
+              };
+            },
+          }),
+        ]),
+  ],
   callbacks: {
     async jwt({ token, user, account, profile }) {
       // First sign-in via Google: create DB user immediately
@@ -60,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // Credentials (fingerprint) mode
-      if (user && !account?.provider) {
+      if (user && (account?.provider === 'credentials' || !account?.provider)) {
         token.userId = user.id;
       }
 

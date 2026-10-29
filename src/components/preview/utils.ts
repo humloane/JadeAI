@@ -59,3 +59,25 @@ export function isSectionEmpty(section: ResumeSection): boolean {
 
   return false;
 }
+
+/**
+ * Render a date range without leaving artefacts when dates are unknown.
+ * - start + end      -> "2023-01 - 2024-06"
+ * - start + current  -> "2023-01 - 至今"
+ * - start only       -> "2023-01"
+ * - end only         -> "2024-06"
+ * - neither          -> "" (callers render nothing)
+ */
+export function dateRange(
+  start?: string | null,
+  end?: string | null,
+  current?: boolean,
+  lang: string = 'zh'
+): string {
+  const from = (start || '').trim();
+  const to = (end || '').trim();
+  const present = lang === 'zh' ? '至今' : 'Present';
+  if (from && to) return `${from} - ${to}`;
+  if (from && current) return `${from} - ${present}`;
+  return from || to;
+}
